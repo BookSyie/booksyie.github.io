@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电子献花 - 永恒的纪念</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6b46c1', // 主色调：深紫色（代表缅怀）
+            secondary: '#9f7aea', // 辅助色：浅紫色
+            accent: '#f56565', // 强调色：红色（用于爱心和交互元素）
+            neutral: {
+              100: '#f7fafc',
+              200: '#edf2f7',
+              300: '#e2e8f0',
+              400: '#cbd5e0',
+              500: '#a0aec0',
+              600: '#718096',
+              700: '#4a5568',
+              800: '#2d3748',
+              900: '#1a202c',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .text-shadow-lg {
+        text-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      .animate-fall {
+        animation: fall 4s linear forwards;
+      }
+      .backdrop-blur {
+        backdrop-filter: blur(8px);
+      }
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    @keyframes fall {
+      0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body class="font-inter bg-neutral-100 text-neutral-800 min-h-screen">
+  <!-- 花瓣飘落动画容器 -->
+  <div id="petals-container" class="fixed inset-0 pointer-events-none overflow-hidden z-10"></div>
+
+  <!-- 主容器 -->
+  <div class="container mx-auto px-4 py-12 max-w-4xl relative z-20">
+    <!-- 标题区域 -->
+    <header class="text-center mb-12">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-primary mb-4 text-shadow-lg">
+        <i class="fa fa-pagelines mr-3" aria-hidden="true"></i>电子献花
+      </h1>
+      <p class="text-neutral-600 text-lg max-w-2xl mx-auto">
+        一束鲜花，一份追思。让我们用电子献花的方式，寄托对逝者的深切怀念。
+      </p>
+      <div class="mt-6 text-neutral-500">
+        <span class="text-primary font-semibold" id="total-flowers">0</span> 人已献花
+      </div>
+    </header>
+
+    <!-- 献花卡片 -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+      <!-- 顶部图片区域 -->
+      <div class="h-64 md:h-80 bg-gradient-to-r from-primary/90 to-secondary/90 relative overflow-hidden">
+        <img src="https://picsum.photos/id/1058/1200/600" alt="纪念背景" class="absolute inset-0 w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 flex flex-col justify-center items-center text-white p-6">
+          <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2 text-shadow">永恒的纪念</h2>
+          <p class="text-white/90 max-w-2xl text-center text-shadow">
+            谨以此页纪念曹转梅女士，她活在我们的记忆里，活在我们的心中。
+          </p>
+        </div>
+      </div>
+
+      <!-- 献花区域 -->
+      <div class="p-6 md:p-8">
+        <!-- 花束选择 -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4 text-neutral-800">选择花束</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <!-- 花束选项 -->
+            <div class="flower-option group cursor-pointer rounded-xl p-4 border-2 border-neutral-200 hover:border-primary transition-all duration-300 hover:shadow-md" data-flower="chrysanthemum">
+              <div class="w-full aspect-square flex items-center justify-center mb-2">
+                <img src="https://picsum.photos/id/106/200/200" alt="菊花" class="w-20 h-20 object-contain group-hover:scale-110 transition-transform duration-300">
+              </div>
+              <p class="text-center text-sm font-medium text-neutral-700">菊花</p>
+              <div class="hidden check-icon absolute top-2 right-2 text-primary text-xl">
+                <i class="fa fa-check-circle"></i>
+              </div>
+            </div>
+            
+            <div class="flower-option group cursor-pointer rounded-xl p-4 border-2 border-neutral-200 hover:border-primary transition-all duration-300 hover:shadow-md" data-flower="lily">
+              <div class="w-full aspect-square flex items-center justify-center mb-2">
+                <img src="https://picsum.photos/id/152/200/200" alt="百合" class="w-20 h-20 object-contain group-hover:scale-110 transition-transform duration-300">
+              </div>
+              <p class="text-center text-sm font-medium text-neutral-700">百合</p>
+            </div>
+            
+            <div class="flower-option group cursor-pointer rounded-xl p-4 border-2 border-neutral-200 hover:border-primary transition-all duration-300 hover:shadow-md" data-flower="rose">
+              <div class="w-full aspect-square flex items-center justify-center mb-2">
+                <img src="https://picsum.photos/id/108/200/200" alt="玫瑰" class="w-20 h-20 object-contain group-hover:scale-110 transition-transform duration-300">
+              </div>
+              <p class="text-center text-sm font-medium text-neutral-700">玫瑰</p>
+            </div>
+            
+            <div class="flower-option group cursor-pointer rounded-xl p-4 border-2 border-neutral-200 hover:border-primary transition-all duration-300 hover:shadow-md" data-flower="carnation">
+              <div class="w-full aspect-square flex items-center justify-center mb-2">
+                <img src="https://picsum.photos/id/133/200/200" alt="康乃馨" class="w-20 h-20 object-contain group-hover:scale-110 transition-transform duration-300">
+              </div>
+              <p class="text-center text-sm font-medium text-neutral-700">康乃馨</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 留言区域 -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4 text-neutral-800">留下追思</h3>
+          <div class="space-y-4">
+            <div>
+              <label for="name" class="block text-sm font-medium text-neutral-700 mb-1">您的姓名</label>
+              <input type="text" id="name" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-200" placeholder="请输入您的姓名">
+            </div>
+            <div>
+              <label for="message" class="block text-sm font-medium text-neutral-700 mb-1">留言内容</label>
+              <textarea id="message" rows="4" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-200 resize-none" placeholder="请留下您的追思话语..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- 献花按钮 -->
+        <div class="text-center">
+          <button id="offer-flower-btn" class="bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center mx-auto">
+            <i class="fa fa-paper-plane mr-2"></i> 献上花束
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 献花记录 -->
+    <div class="mt-12 bg-white rounded-2xl shadow-lg p-6 md:p-8">
+      <h3 class="text-xl font-semibold mb-6 text-neutral-800 flex items-center">
+        <i class="fa fa-list-alt text-primary mr-2"></i> 献花记录
+      </h3>
+      <div id="flower-records" class="space-y-4">
+        <!-- 记录将通过JavaScript动态添加 -->
+        <div class="text-center text-neutral-500 py-8">
+          <i class="fa fa-leaf text-3xl mb-2 text-neutral-300"></i>
+          <p>暂无献花记录，快来献上第一束花吧！</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 献花成功提示 -->
+  <div id="success-modal" class="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-500 mb-4">
+          <i class="fa fa-check text-3xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-neutral-800 mb-2">献花成功！</h3>
+        <p class="text-neutral-600 mb-6">您的追思已被记录，感谢您的献花。</p>
+        <button id="close-modal-btn" class="bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-6 rounded-full shadow-md hover:shadow-lg transition-all duration-300">
+          确定
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 背景音乐控制 -->
+  <div class="fixed bottom-6 right-6 z-30">
+    <button id="music-toggle" class="bg-white rounded-full shadow-lg p-3 hover:bg-neutral-100 transition-all duration-300">
+      <i class="fa fa-music text-primary"></i>
+    </button>
+  </div>
+
+  <audio id="background-music" loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // 花瓣图片URL数组
+    const petalImages = [
+      'https://picsum.photos/id/119/100/100',
+      'https://picsum.photos/id/129/100/100',
+      'https://picsum.photos/id/131/100/100',
+      'https://picsum.photos/id/133/100/100',
+      'https://picsum.photos/id/134/100/100'
+    ];
+    
+    // 花束类型映射
+    const flowerTypes = {
+      chrysanthemum: { name: '菊花', image: 'https://picsum.photos/id/106/200/200' },
+      lily: { name: '百合', image: 'https://picsum.photos/id/152/200/200' },
+      rose: { name: '玫瑰', image: 'https://picsum.photos/id/108/200/200' },
+      carnation: { name: '康乃馨', image: 'https://picsum.photos/id/133/200/200' }
+    };
+    
+    // 全局变量
+    let selectedFlower = 'chrysanthemum';
+    let totalFlowers = 0;
+    let flowerRecords = [];
+    
+    // DOM元素
+    const flowerOptions = document.querySelectorAll('.flower-option');
+    const offerFlowerBtn = document.getElementById('offer-flower-btn');
+    const nameInput = document.getElementById('name');
+    const messageInput = document.getElementById('message');
+    const flowerRecordsContainer = document.getElementById('flower-records');
+    const totalFlowersElement = document.getElementById('total-flowers');
+    const successModal = document.getElementById('success-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const petalsContainer = document.getElementById('petals-container');
+    const musicToggle = document.getElementById('music-toggle');
+    const backgroundMusic = document.getElementById('background-music');
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      // 从本地存储加载数据
+      loadData();
+      
+      // 为花束选项添加点击事件
+      flowerOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          // 移除所有选中状态
+          flowerOptions.forEach(opt => {
+            opt.classList.remove('border-primary', 'bg-primary/5');
+            opt.classList.add('border-neutral-200');
+          });
+          
+          // 添加选中状态
+          option.classList.add('border-primary', 'bg-primary/5');
+          option.classList.remove('border-neutral-200');
+          
+          // 更新选中的花束类型
+          selectedFlower = option.dataset.flower;
+        });
+      });
+      
+      // 为献花按钮添加点击事件
+      offerFlowerBtn.addEventListener('click', offerFlower);
+      
+      // 为关闭模态框按钮添加点击事件
+      closeModalBtn.addEventListener('click', () => {
+        successModal.classList.add('opacity-0', 'pointer-events-none');
+        successModal.querySelector('div').classList.add('scale-95');
+        successModal.querySelector('div').classList.remove('scale-100');
+      });
+      
+      // 为音乐按钮添加点击事件
+      musicToggle.addEventListener('click', toggleMusic);
+      
+      // 自动播放音乐（如果浏览器允许）
+      playMusic();
+    });
+    
+    // 献花功能
+    function offerFlower() {
+      const name = nameInput.value.trim() || '匿名';
+      const message = messageInput.value.trim() || '默哀致敬';
+      
+      // 创建新的献花记录
+      const newRecord = {
+        id: Date.now(),
+        name,
+        message,
+        flowerType: selectedFlower,
+        timestamp: new Date().toLocaleString()
+      };
+      
+      // 添加到记录数组
+      flowerRecords.unshift(newRecord);
+      
+      // 更新总献花数
+      totalFlowers++;
+      totalFlowersElement.textContent = totalFlowers;
+      
+      // 保存到本地存储
+      saveData();
+      
+      // 更新记录显示
+      updateRecordsDisplay();
+      
+      // 显示成功提示
+      showSuccessModal();
+      
+      // 触发花瓣飘落动画
+      createPetalFallEffect(20);
+      
+      // 重置表单
+      nameInput.value = '';
+      messageInput.value = '';
+    }
+    
+    // 显示成功模态框
+    function showSuccessModal() {
+      successModal.classList.remove('opacity-0', 'pointer-events-none');
+      successModal.querySelector('div').classList.remove('scale-95');
+      successModal.querySelector('div').classList.add('scale-100');
+    }
+    
+    // 创建花瓣飘落效果
+    function createPetalFallEffect(count = 10) {
+      for (let i = 0; i < count; i++) {
+        const petal = document.createElement('div');
+        const petalImage = petalImages[Math.floor(Math.random() * petalImages.length)];
+        
+        // 随机属性
+        const size = Math.random() * 20 + 10; // 10-30px
+        const left = Math.random() * 100; // 0-100%
+        const duration = Math.random() * 5 + 3; // 3-8秒
+        const delay = Math.random() * 2; // 0-2秒延迟
+        
+        petal.innerHTML = `<img src="${petalImage}" alt="花瓣" class="w-full h-full object-cover">`;
+        petal.className = 'absolute animate-fall';
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size}px`;
+        petal.style.left = `${left}%`;
+        petal.style.animationDuration = `${duration}s`;
+        petal.style.animationDelay = `${delay}s`;
+        petal.style.opacity = `${Math.random() * 0.5 + 0.5}`; // 0.5-1.0
+        
+        petalsContainer.appendChild(petal);
+        
+        // 动画结束后移除元素
+        setTimeout(() => {
+          petal.remove();
+        }, (duration + delay) * 1000);
+      }
+    }
+    
+    // 更新记录显示
+    function updateRecordsDisplay() {
+      if (flowerRecords.length === 0) {
+        flowerRecordsContainer.innerHTML = `
+          <div class="text-center text-neutral-500 py-8">
+            <i class="fa fa-leaf text-3xl mb-2 text-neutral-300"></i>
+            <p>暂无献花记录，快来献上第一束花吧！</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 限制显示最近的10条记录
+      const recentRecords = flowerRecords.slice(0, 10);
+      
+      let html = '';
+      recentRecords.forEach(record => {
+        const flowerInfo = flowerTypes[record.flowerType];
+        
+        html += `
+          <div class="border-b border-neutral-100 pb-4 last:border-0 last:pb-0">
+            <div class="flex items-start">
+              <div class="w-12 h-12 rounded-full overflow-hidden mr-4 flex-shrink-0">
+                <img src="${flowerInfo.image}" alt="${flowerInfo.name}" class="w-full h-full object-cover">
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <h4 class="font-medium text-neutral-800">${record.name}</h4>
+                  <span class="text-xs text-neutral-500">${record.timestamp}</span>
+                </div>
+                <p class="text-neutral-600 mt-1">${record.message}</p>
+                <div class="mt-2 flex items-center text-xs text-neutral-500">
+                  <span class="mr-4"><i class="fa fa-flower mr-1"></i> ${flowerInfo.name}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      flowerRecordsContainer.innerHTML = html;
+    }
+    
+    // 保存数据到本地存储
+    function saveData() {
+      localStorage.setItem('flower-offering-data', JSON.stringify({
+        totalFlowers,
+        flowerRecords
+      }));
+    }
+    
+    // 从本地存储加载数据
+    function loadData() {
+      const savedData = localStorage.getItem('flower-offering-data');
+      
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        totalFlowers = data.totalFlowers || 0;
+        flowerRecords = data.flowerRecords || [];
+        
+        totalFlowersElement.textContent = totalFlowers;
+        updateRecordsDisplay();
+      }
+    }
+    
+    // 音乐控制
+    function toggleMusic() {
+      if (backgroundMusic.paused) {
+        playMusic();
+      } else {
+        pauseMusic();
+      }
+    }
+    
+    function playMusic() {
+      backgroundMusic.play().catch(err => {
+        // 浏览器可能会阻止自动播放
+        console.log('背景音乐自动播放被阻止:', err);
+      });
+      musicToggle.innerHTML = '<i class="fa fa-volume-up text-primary"></i>';
+    }
+    
+    function pauseMusic() {
+      backgroundMusic.pause();
+      musicToggle.innerHTML = '<i class="fa fa-volume-off text-neutral-500"></i>';
+    }
+  </script>
+</body>
+</html>
